@@ -1,6 +1,7 @@
 package LMS_Main;
 
 import java.awt.EventQueue;
+import errorPanels.LoginFail_ErrorPanel;
 
 import javax.swing.JFrame;
 import javax.swing.GroupLayout;
@@ -16,17 +17,28 @@ import java.awt.SystemColor;
 import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class loginpage_LMS {
 
 	private JFrame frame;
-	private JTextField textField_2;
-	private JTextField textField_3;
+	private JTextField username_txt;
+	private JTextField password_txt;
 	private JTextField txt_username;
 	private JTextField txt_password;
-	private JTextField textField_4;
+	private JTextField cpassword_txt;
+	String url = "jdbc:mysql://localhost:3306/lms_db";
+	String username = "root";
+	String dbpassword = "Vengadesh#27";
+	String name;
 
 	/**
 	 * Launch the application.
@@ -54,11 +66,13 @@ public class loginpage_LMS {
 	/**
 	 * Initialize the contents of the frame.
 	 */
+	
+	
 	private void initialize() {
 		frame = new JFrame();
 		frame.setUndecorated(true);
 		frame.getContentPane().setBackground(new Color(0, 0, 64));
-		frame.setBounds(100, 100, 1068, 659);
+		frame.setBounds(350, 100, 1068, 659);
 		frame.setExtendedState(0);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
@@ -102,14 +116,14 @@ public class loginpage_LMS {
 		lblNewLabel_4_1.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel_4_1.setForeground(Color.BLACK);
 		lblNewLabel_4_1.setFont(new Font("Segoe UI Variable", Font.BOLD, 25));
-		lblNewLabel_4_1.setBounds(8, 251, 378, 41);
+		lblNewLabel_4_1.setBounds(8, 237, 378, 41);
 		Login.add(lblNewLabel_4_1);
 		
 		JLabel lblLogInTo_1_1 = new JLabel("Log in or register to continue ");
 		lblLogInTo_1_1.setHorizontalAlignment(SwingConstants.CENTER);
 		lblLogInTo_1_1.setForeground(Color.GRAY);
 		lblLogInTo_1_1.setFont(new Font("Segoe UI Semibold", Font.BOLD, 18));
-		lblLogInTo_1_1.setBounds(8, 298, 378, 25);
+		lblLogInTo_1_1.setBounds(8, 284, 378, 25);
 		Login.add(lblLogInTo_1_1);
 		
 		JLabel lblUserName_2_1 = new JLabel("User Name");
@@ -119,6 +133,16 @@ public class loginpage_LMS {
 		Login.add(lblUserName_2_1);
 		
 		txt_username = new JTextField();
+		txt_username.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				
+				if(e.getKeyChar() == KeyEvent.VK_ENTER)
+					txt_password.requestFocus();
+			}
+			
+			
+		});
 		txt_username.setHorizontalAlignment(SwingConstants.CENTER);
 		txt_username.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
 		txt_username.setColumns(10);
@@ -145,10 +169,30 @@ public class loginpage_LMS {
 		JButton login_btn = new JButton("Log in ");
 		login_btn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				try {
+			    String name = txt_username.getText();
+				String password = txt_password.getText();
 				
-				MainScreen m = new MainScreen();
-				m.setVisible(true);
-				frame.setVisible(false);
+				
+				 String query = "select * from student where name = '"+name+"'";
+				 Connection con = DriverManager.getConnection(url , username , dbpassword);
+			     Statement st = con.createStatement();
+			     ResultSet rs = st.executeQuery(query);
+			     rs.next();
+			     
+			     if(password.equals(rs.getString(2))) 
+			     {
+			    	MainScreen m = new MainScreen();
+			    	m.frame.setVisible(true);
+			    	frame.dispose();
+			     }else 
+			     {
+			    	 LoginFail_ErrorPanel error = new LoginFail_ErrorPanel();
+			    	 error.frame.setVisible(true);
+			     }
+			     }catch(SQLException e1 ) {
+					e1.printStackTrace();
+				}
 			}
 		});
 		login_btn.setForeground(Color.WHITE);
@@ -188,14 +232,23 @@ public class loginpage_LMS {
 		lblUserName_2.setBounds(35, 177, 155, 29);
 		Registration.add(lblUserName_2);
 		
-		textField_2 = new JTextField();
-		textField_2.setHorizontalAlignment(SwingConstants.CENTER);
-		textField_2.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
-		textField_2.setColumns(10);
-		textField_2.setBorder(null);
-		textField_2.setBackground(SystemColor.menu);
-		textField_2.setBounds(35, 212, 318, 34);
-		Registration.add(textField_2);
+		username_txt = new JTextField();
+		username_txt.setHorizontalAlignment(SwingConstants.CENTER);
+		username_txt.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
+		username_txt.setColumns(10);
+		username_txt.setBorder(null);
+		username_txt.setBackground(SystemColor.menu);
+		username_txt.setBounds(35, 212, 318, 34);
+		Registration.add(username_txt);
+		
+		cpassword_txt = new JTextField();
+		cpassword_txt.setHorizontalAlignment(SwingConstants.CENTER);
+		cpassword_txt.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
+		cpassword_txt.setColumns(10);
+		cpassword_txt.setBorder(null);
+		cpassword_txt.setBackground(SystemColor.menu);
+		cpassword_txt.setBounds(35, 376, 318, 34);
+		Registration.add(cpassword_txt);
 		
 		JLabel lblUserName_1_1 = new JLabel("Password");
 		lblUserName_1_1.setHorizontalAlignment(SwingConstants.LEFT);
@@ -203,16 +256,40 @@ public class loginpage_LMS {
 		lblUserName_1_1.setBounds(35, 252, 155, 29);
 		Registration.add(lblUserName_1_1);
 		
-		textField_3 = new JTextField();
-		textField_3.setHorizontalAlignment(SwingConstants.CENTER);
-		textField_3.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
-		textField_3.setColumns(10);
-		textField_3.setBorder(null);
-		textField_3.setBackground(SystemColor.menu);
-		textField_3.setBounds(35, 287, 318, 34);
-		Registration.add(textField_3);
+		password_txt = new JTextField();
+		password_txt.setHorizontalAlignment(SwingConstants.CENTER);
+		password_txt.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
+		password_txt.setColumns(10);
+		password_txt.setBorder(null);
+		password_txt.setBackground(SystemColor.menu);
+		password_txt.setBounds(35, 287, 318, 34);
+		Registration.add(password_txt);
 		
 		JButton login_btn_1 = new JButton("Register");
+		login_btn_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+				String uname = username_txt.getText();
+				String pass = password_txt.getText();
+				String cpass = cpassword_txt.getText();
+				 if(pass.equals(cpass)) {
+					 
+				 
+				 String query = "insert into student value ('"+uname+"' , '"+pass+"')";
+				 Connection con = DriverManager.getConnection(url , username , dbpassword);
+			     Statement st = con.createStatement();
+			     st.executeUpdate(query);
+				 }else {
+					 System.out.print("Password does not match");
+				 }
+				
+				}catch(SQLException e1) {
+					System.out.print(e1);
+				}
+				
+				
+			}
+		});
 		login_btn_1.setForeground(Color.WHITE);
 		login_btn_1.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
 		login_btn_1.setBorder(null);
@@ -251,14 +328,7 @@ public class loginpage_LMS {
 		lblUserName_1_1_2.setBounds(35, 341, 189, 29);
 		Registration.add(lblUserName_1_1_2);
 		
-		textField_4 = new JTextField();
-		textField_4.setHorizontalAlignment(SwingConstants.CENTER);
-		textField_4.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
-		textField_4.setColumns(10);
-		textField_4.setBorder(null);
-		textField_4.setBackground(SystemColor.menu);
-		textField_4.setBounds(35, 376, 318, 34);
-		Registration.add(textField_4);
+	
 		
 		JLabel lblUserName_2_2 = new JLabel("CREATE ACCOUNT");
 		lblUserName_2_2.setForeground(new Color(0, 0, 128));
